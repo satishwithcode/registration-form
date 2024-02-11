@@ -1,0 +1,67 @@
+<?php
+include 'connection.php';
+
+if(isset($_POST['insert']))
+{
+    // Retrieve form data
+    $image = $_FILES['image']['name'];
+    $fname = $_POST['fname'];
+    $designation = $_POST['designation'];
+    $contact = $_POST['contact'];
+    $email = $_POST['email'];
+    $skills = $_POST['skills'];
+    $experience = $_POST['experience'];
+    $facebook = $_POST['facebook'];
+    $instagram = $_POST['instagram'];
+    $twitter = $_POST['twitter'];
+    $linkedin = $_POST['linkedin'];
+    $password = $_POST['password']; // Plain text password
+    
+    // Encrypting the password
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+    // Store the real password as well
+    $real_password = $_POST['password'];
+    
+    $status = $_POST['status']; 
+
+    // Check if email or contact already exists in the database
+    $check_query = "SELECT * FROM `table-name` WHERE `email` = '$email' OR `contact` = '$contact'";
+    $check_result = mysqli_query($con, $check_query);
+
+    if(mysqli_num_rows($check_result) > 0) {
+        // If email or contact already exists, show an error message
+        echo "<script>alert('Email or Contact number already exists. Please use a different email or contact number.');</script>";
+    } else {
+        // If email or contact does not exist, proceed with insertion
+        $query = "INSERT INTO `table-name`(`image`, `fname`,  `designation`, `contact`, `email`,  `skills`, `experience`, `facebook`, `instagram`, `twitter`, `linkedin`, `password`, `real_password`, `status`) VALUES ('$image', '$fname', '$designation', '$contact', '$email', '$skills', '$experience', '$facebook', '$instagram', '$twitter', '$linkedin', '$hashed_password', '$real_password', '$status')";
+    
+        $result = mysqli_query($con, $query);
+
+        if($result) {
+            // If insertion is successful, move uploaded image and show success message
+            move_uploaded_file($_FILES['image']['tmp_name'], './admin/folder-name'. $image);
+            // Send email confirmation
+            $to = $email;
+            $subject = 'Registration Confirmation';
+            $message = 'Dear ' . $fname . ',' . "\r\n\r\n" .
+                       'We are delighted to inform you that your registration has been successfully submitted. Our team will now review your details. Upon verification, your profile will be activated, and you will receive further instructions on accessing your account.' . "\r\n\r\n" .
+                       'After verifying your registration, you can log in to your account and update your information using the following credentials:' . "\r\n" .
+                       'Registered Email: ' . $email . "\r\n" .
+                       'Registered Password: ' . $password . "\r\n\r\n" .
+                       'Thank you for choosing us as your platform for freelance opportunities. We look forward to assisting you in reaching your professional goals.' . "\r\n\r\n" .
+                       'Best regards,' ."\r\n" .
+                       'Team Soilwrap Technologies';
+
+            $headers = 'From: domain@example.com' . "\r\n" .  
+                       'X-Mailer: PHP/' . phpversion();
+
+            mail($to, $subject, $message, $headers);
+            echo "<script>alert('Your registration has been successfully submitted. Please check your email for confirmation.');</script>"; 
+        } else {
+            // If insertion fails, show error message
+            echo "<script>alert('Registration failed. Please try again.');</script>";
+        }
+    }
+}
+?>
