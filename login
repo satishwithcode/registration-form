@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION["email"] = $email;
             
                 // Redirect to dashboard.php
-                header("Location: index.php");
+                header("Location: update-form-data.php");
                 exit();
             } else {
                echo '<script> alert("Your password has been Invalid. ' . $rawPassword . '");</script>';
